@@ -1,10 +1,12 @@
-# Ski Goggles ESP32 System
+# Ski_Goggles_ESP32_System
 
 ## Overview
 ### System Description
 #### This project implements an ESP32-based telemetry and display system designed for integration into ski goggles.
 #### The system collects IMU, GPS, and temperature data and renders real-time information to an OLED heads-up display.
 #### A cloud API (Application Programming Interface) is used to upload rider telemetry for remote monitoring.
+#### The API for this system is hosted in a separate repository:  
+#### https://github.com/Nikowarren7/squad_ski_api
 
 ### Design Goals
 #### The system prioritizes reliability, non-blocking sensor workflows, smooth display updates, and intuitive motion-based controls.
@@ -105,6 +107,10 @@
 #### Telemetry is sent to:
 #### https://squad-ski-api.onrender.com
 
+### GitHub Repository for the API
+#### The full backend implementation and documentation can be found here:  
+#### https://github.com/Nikowarren7/squad_ski_api
+
 ### Data Fields
 #### • user_id  
 #### • active status  
@@ -112,7 +118,7 @@
 #### • trail name  
 #### • timestamp (server-assigned)  
 
-#### This allows real-time visualization of active riders.
+#### This enables real-time visualization and tracking of active riders.
 
 ---
 
