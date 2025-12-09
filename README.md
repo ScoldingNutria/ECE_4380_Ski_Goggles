@@ -10,7 +10,7 @@
 ## The firmware uses a lightweight RTOS-style scheduler to coordinate subsystem updates.
 ## Each module operates in periodic time slices to maintain smooth, non-blocking performance.
 
-## The system continuously samples IMU data for heading, pitch, roll, and g-force.
+### The system continuously samples IMU data for heading, pitch, roll, and g-force.
 ## GPS data is used to determine speed, altitude, satellite count, and geographic position.
 ## Temperature data is acquired using a OneWire sensor.
 ## The OLED displays three dynamic lines of information updated in real time.
