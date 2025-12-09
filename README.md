@@ -1,64 +1,147 @@
-# Ski_Goggles_ESP32_System
+# Ski Goggles ESP32 System
 
-## This project implements an ESP32-based telemetry and display platform designed for ski goggles.
-## The system integrates GPS, an inertial measurement unit, temperature sensing, and an OLED heads-up display.
-## A cloud API (Application Programming Interface) is used for real-time telemetry uploads and rider tracking.
+## Overview
+### System Description
+#### This project implements an ESP32-based telemetry and display system designed for integration into ski goggles.
+#### The system collects IMU, GPS, and temperature data and renders real-time information to an OLED heads-up display.
+#### A cloud API (Application Programming Interface) is used to upload rider telemetry for remote monitoring.
 
-## The system performs live trail identification, heading calculation, speed monitoring, temperature reading,
-## and g-force tracking while maintaining a responsive display and motion-controlled user interface.
+### Design Goals
+#### The system prioritizes reliability, non-blocking sensor workflows, smooth display updates, and intuitive motion-based controls.
+#### A lightweight RTOS-style scheduler ensures periodic execution of all subsystems without interfering with one another.
 
-## The firmware uses a lightweight RTOS-style scheduler to coordinate subsystem updates.
-## Each module operates in periodic time slices to maintain smooth, non-blocking performance.
+---
 
-#### The system continuously samples IMU data for heading, pitch, roll, and g-force.
-## GPS data is used to determine speed, altitude, satellite count, and geographic position.
-## Temperature data is acquired using a OneWire sensor.
-## The OLED displays three dynamic lines of information updated in real time.
-## Trail identification is performed using nearest-point matching against predefined trail coordinates.
-## Telemetry is periodically uploaded to the Squad Ski API.
-## Menu navigation is performed using head-tilt gestures detected by the IMU.
+## System Architecture
+### Core Functionality
+#### • Continuous IMU sampling (heading, pitch, roll, g-force)  
+#### • GPS updates (speed, altitude, coordinates, satellite count)  
+#### • Temperature readings via a OneWire sensor  
+#### • Real-time OLED display using a custom three-line layout  
+#### • Automatic trail identification using nearest-point matching  
+#### • Periodic telemetry uploads to the Squad Ski API  
+#### • Tilt-based menu navigation using IMU roll and pitch  
 
-## The file main.cpp initializes Wi-Fi (Wireless Fidelity), configures the scheduler, and manages the main loop.
-## It runs both the Ski FSM and the Network FSM at their assigned update rates.
+### Scheduler Structure
+#### The firmware uses periodic “ticks” to coordinate subsystem updates.
+#### This prevents blocking and allows every sensor and task to run predictably.
 
-## The file ski_fsm.cpp contains the primary finite-state machine for system behavior.
-## It handles IMU, GPS, and temperature sampling, trail detection, OLED updates, menu logic, and safety states.
+---
 
-## The file network_fsm.cpp manages API communication in a non-blocking loop.
-## It supports telemetry uploads and future expansion for user registration and rider queries.
+## File Descriptions
 
-## The file api_client.cpp constructs and sends JSON telemetry packets.
-## It trims trail names, builds URLs, performs HTTP POST requests, and reports API success or failure.
+### main.cpp
+#### Handles Wi-Fi initialization, task scheduling, and the primary timing loop.
+#### Runs two key tasks:
+#### • Ski FSM (high-frequency sensor loop)
+#### • Network FSM (lower-frequency API loop)
 
-## The file IMU_sense.cpp manages the BNO055 IMU.
-## It provides heading, pitch, roll, linear acceleration, and g-force calculations with peak tracking.
+### ski_fsm.cpp
+#### Implements the main finite-state machine controlling system behavior.
+#### Responsibilities include:
+#### • Sensor sampling (IMU, GPS, temperature)  
+#### • Trail detection  
+#### • OLED rendering  
+#### • Menu navigation using head movements  
+#### • Stabilization/wait states for clean transitions  
 
-## The file GPS_sense.cpp uses TinyGPS++ to provide latitude, longitude, altitude, speed, and satellite count.
-## It also integrates with the trail-identification system to determine the nearest ski trail.
+### network_fsm.cpp
+#### Manages communication with the cloud API.
+#### Handles telemetry uploads and supports future extensions such as active-user queries.
 
-## The file TEMP_sense.cpp reads from a OneWire temperature sensor.
-## It reports values in both Celsius and Fahrenheit.
+### api_client.cpp
+#### Formats and sends outbound JSON telemetry packets.
+#### Includes:
+#### • URL construction  
+#### • Trail-name trimming  
+#### • HTTP POST handling  
+#### • Response validation  
 
-## The file OLED_write.cpp renders the monochrome OLED display.
-## It includes auto-mirroring, large and small text modes, custom three-line displays, and pixel-level glyph drawing.
+### IMU_sense.cpp
+#### Interfaces with the BNO055 IMU.
+#### Provides heading, pitch, roll, linear acceleration, and g-force calculations.
+#### Also maintains maximum g-force values.
 
-## The files skills.cpp and skills.h provide shared global variables, menu definitions, direction mapping,
-## dynamic labels, and the URL builder function used throughout the project.
+### GPS_sense.cpp
+#### Integrates TinyGPS++ to obtain:
+#### • Latitude and longitude  
+#### • Altitude  
+#### • Speed (mph)  
+#### • Satellite count  
+#### Also supports trail identification using map coordinates.
 
-## The files trail_map.cpp and trail_map.h define trail coordinates and implement the nearest-point trail algorithm.
+### TEMP_sense.cpp
+#### Reads temperature from a OneWire sensor and reports values in Celsius and Fahrenheit.
 
-## Menu interaction is hands-free and uses head movements detected by the IMU.
-## Rolling right selects items, pitching up or down scrolls, and neutral roll confirms actions.
-## The OLED displays three lines at a time with live sensor values and dynamic labels.
+### OLED_write.cpp
+#### Controls the SSD1306 OLED display.
+#### Features include:
+#### • Horizontal mirroring for goggle mounting orientation  
+#### • Large and small font modes  
+#### • Three-line dynamic display layout  
+#### • Pixel-level custom glyphs for compact text rendering  
 
-## Telemetry is uploaded to https://squad-ski-api.onrender.com.
-## Data fields include user_id, active status, latitude, longitude, trail name, and a server timestamp.
+### skills.cpp / skills.h
+#### Provides global sensor variables, menu definitions, directional heading mapping,  
+#### the URL builder function, and dynamic display labels.
 
-## Building this project requires PlatformIO, an ESP32 development board, and sensors including the BNO055,
-## GPS module, OneWire temperature sensor, and SSD1306 OLED.
+### trail_map.cpp / trail_map.h
+#### Contains predefined GPS trail coordinates.
+#### Performs nearest-point matching to determine the rider’s current trail.
 
-## To build and upload the firmware:
-## Clone the repository using “git clone <repo-url>”.
-## Open the project in PlatformIO or Visual Studio Code.
-## Build and upload using “pio run --target upload”.
-## View serial output using “pio device monitor”.
+---
+
+## User Interaction
+### Motion-Controlled Menu System
+#### • Roll right → select menu item  
+#### • Pitch up/down → scroll through options  
+#### • Neutral roll → confirm or return  
+#### The OLED always displays three lines, updating continuously with live sensor values.
+
+---
+
+## API Integration
+### Endpoint
+#### Telemetry is sent to:
+#### https://squad-ski-api.onrender.com
+
+### Data Fields
+#### • user_id  
+#### • active status  
+#### • latitude and longitude  
+#### • trail name  
+#### • timestamp (server-assigned)  
+
+#### This allows real-time visualization of active riders.
+
+---
+
+## Building & Flashing Instructions
+
+### Requirements
+#### • PlatformIO  
+#### • ESP32 development board  
+#### • BNO055 IMU  
+#### • GPS module  
+#### • OneWire temperature sensor  
+#### • SSD1306 OLED display  
+
+### Steps
+#### 1. Clone the repository:  
+#### `git clone <repo-url>`
+#### 2. Open the project in PlatformIO or VS Code.  
+#### 3. Build and upload:  
+#### `pio run --target upload`
+#### 4. Open the serial monitor:  
+#### `pio device monitor`
+
+---
+
+## Future Improvements
+### Planned Enhancements
+#### • Expanded trail map coverage  
+#### • Crash detection using g-force thresholds  
+#### • Bluetooth audio alerts  
+#### • Offline data logging  
+#### • Enhanced OLED UI themes  
+#### • Battery monitoring and power optimization  
